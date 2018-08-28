@@ -106,6 +106,9 @@ namespace Nop.Services.Installation
         private readonly IRepository<Warehouse> _warehouseRepository;
         private readonly IWebHelper _webHelper;
 
+        //list of unique search engine names for product tags
+        private List<string> _productTagSeNames;
+
         #endregion
 
         #region Ctor
@@ -223,6 +226,8 @@ namespace Nop.Services.Installation
             this._vendorRepository = vendorRepository;
             this._warehouseRepository = warehouseRepository;
             this._webHelper = webHelper;
+
+            _productTagSeNames  = new List<string>();
         }
 
         #endregion
@@ -7099,6 +7104,7 @@ namespace Nop.Services.Installation
                     IsActive = true,
                     Slug = ValidateSeName(category, category.Name)
                 });
+                _productTagSeNames.Add(ValidateSeName(category, category.Name));
             }
         }
 
@@ -9108,7 +9114,6 @@ namespace Nop.Services.Installation
 
             AddProductTag(productNikeFloral, "cool");
             AddProductTag(productNikeFloral, "shoes");
-            AddProductTag(productNikeFloral, "apparel");
 
             productNikeFloral.ProductAttributeMappings.First(x => x.ProductAttribute.Name == "Print").ProductAttributeValues.First(x => x.Name == "Natural").PictureId = productNikeFloral.ProductPictures.ElementAt(0).PictureId;
             productNikeFloral.ProductAttributeMappings.First(x => x.ProductAttribute.Name == "Print").ProductAttributeValues.First(x => x.Name == "Fresh").PictureId = productNikeFloral.ProductPictures.ElementAt(1).PictureId;
@@ -9272,7 +9277,6 @@ namespace Nop.Services.Installation
 
             AddProductTag(productAdidas, "cool");
             AddProductTag(productAdidas, "shoes");
-            AddProductTag(productAdidas, "apparel");
 
             productAdidas.ProductAttributeMappings.First(x => x.ProductAttribute.Name == "Color").ProductAttributeValues.First(x => x.Name == "Red").PictureId = productAdidas.ProductPictures.ElementAt(0).PictureId;
             productAdidas.ProductAttributeMappings.First(x => x.ProductAttribute.Name == "Color").ProductAttributeValues.First(x => x.Name == "Blue").PictureId = productAdidas.ProductPictures.ElementAt(1).PictureId;
@@ -9349,7 +9353,6 @@ namespace Nop.Services.Installation
 
             AddProductTag(productNikeZoom, "jeans");
             AddProductTag(productNikeZoom, "cool");
-            AddProductTag(productNikeZoom, "apparel");
 
             var productNikeTailwind = new Product
             {
@@ -9455,7 +9458,6 @@ namespace Nop.Services.Installation
             _productRepository.Insert(productNikeTailwind);
 
             AddProductTag(productNikeTailwind, "cool");
-            AddProductTag(productNikeTailwind, "apparel");
             AddProductTag(productNikeTailwind, "shirt");
 
             var productOversizedWomenTShirt = new Product
@@ -9525,7 +9527,6 @@ namespace Nop.Services.Installation
             _productRepository.Insert(productOversizedWomenTShirt);
 
             AddProductTag(productOversizedWomenTShirt, "cool");
-            AddProductTag(productOversizedWomenTShirt, "apparel");
             AddProductTag(productOversizedWomenTShirt, "shirt");
 
             var productCustomTShirt = new Product
@@ -9587,7 +9588,6 @@ namespace Nop.Services.Installation
 
             AddProductTag(productCustomTShirt, "cool");
             AddProductTag(productCustomTShirt, "shirt");
-            AddProductTag(productCustomTShirt, "apparel");
 
             var productLeviJeans = new Product
             {
@@ -9664,7 +9664,6 @@ namespace Nop.Services.Installation
 
             AddProductTag(productLeviJeans, "cool");
             AddProductTag(productLeviJeans, "jeans");
-            AddProductTag(productLeviJeans, "apparel");
 
              var productObeyHat = new Product
             {
@@ -9749,7 +9748,6 @@ namespace Nop.Services.Installation
             });
             _productRepository.Insert(productObeyHat);
 
-            AddProductTag(productObeyHat, "apparel");
             AddProductTag(productObeyHat, "cool");
 
             var productBelt = new Product
@@ -9847,7 +9845,6 @@ namespace Nop.Services.Installation
             });
             _productRepository.Insert(productSunglasses);
 
-            AddProductTag(productSunglasses, "apparel");
             AddProductTag(productSunglasses, "cool");
 
             relatedProducts.AddRange(new[]
@@ -12264,14 +12261,19 @@ namespace Nop.Services.Installation
             _productRepository.Update(product);
 
             //search engine name
-            _urlRecordRepository.Insert(new UrlRecord
+            var slug = ValidateSeName(productTag, productTag.Name);
+            if (!_productTagSeNames.Contains(slug))
             {
-                EntityId = productTag.Id,
-                EntityName = typeof(ProductTag).Name,
-                LanguageId = 0,
-                IsActive = true,
-                Slug = ValidateSeName(productTag, productTag.Name)
-            });
+                _urlRecordRepository.Insert(new UrlRecord
+                {
+                    EntityId = productTag.Id,
+                    EntityName = typeof(ProductTag).Name,
+                    LanguageId = 0,
+                    IsActive = true,
+                    Slug = slug
+                });
+                _productTagSeNames.Add(slug);
+            }
         }
 
         #endregion
